@@ -1,0 +1,160 @@
+EXPERIMENT 2
+
+ROLLUP
+
+On time
+ SELECT time_key, sum(units_sold) FROM salesfact GROUP BY time_key WITH ROLLUP;
++----------+-----------------+
+| time_key | sum(units_sold) |
++----------+-----------------+
+|        1 |               9 |
+|        2 |              19 |
+|        3 |              13 |
+|        4 |               3 |
+|        6 |              40 |
+|        7 |               2 |
+|        8 |             503 |
+|        9 |               2 |
+|       10 |              10 |
+|       11 |              30 |
+|       12 |              15 |
+|       13 |              48 |
+|       14 |               3 |
+|       15 |               8 |
+|     NULL |             705 |
++----------+-----------------+
+15 rows in set (0.00 sec)
+
+On stores
+SELECT  store_key, sum(units_sold) FROM salesfact GROUP BY  store_key WITH ROLLUP;
++-----------+-----------------+
+| store_key | sum(units_sold) |
++-----------+-----------------+
+|         1 |             517 |
+|         2 |               4 |
+|         3 |               3 |
+|         4 |               4 |
+|         5 |              20 |
+|         6 |               8 |
+|         7 |               5 |
+|         8 |               9 |
+|         9 |              21 |
+|        10 |              15 |
+|        11 |              30 |
+|        12 |              60 |
+|        13 |               4 |
+|        14 |               2 |
+|        16 |               3 |
+|      NULL |             705 |
++-----------+-----------------+
+16 rows in set (0.01 sec)
+
+On product
+SELECT  product_key, sum(units_sold) FROM salesfact GROUP BY product_key  WITH ROLLUP;
+
++-------------+-----------------+
+| product_key | sum(units_sold) |
++-------------+-----------------+
+|       	1 |          	11 |
+|       	2 |          	40 |
+|       	3 |          	28 |
+|       	4 |           	5 |
+|       	5 |          	18 |
+|       	6 |           	3 |
+|       	7 |          	90 |
+|       	8 |          	30 |
+|       	9 |          	10 |
+|      	10 |         	107 |
+|      	12 |          	38 |
+|      	13 |          	28 |
+|      	14 |          	17 |
+|    	NULL |         	425 |
++-------------+-----------------+
+14 rows in set (0.00 sec)
+
+
+SLICE:
+
+On time
+mysql> SELECT product_key, store_key,sales_amount_MRP_rupees FROM salesfact
+	-> 	WHERE time_key in(select t_key from tdt where year=2018);
++-------------+-----------+-------------------------+
+| product_key | store_key | sales_amount_MRP_rupees |
++-------------+-----------+-------------------------+
+|       	5 |     	8 |              	324.00 |
+|       	3 |    	13 |               	20.00 |
+|       	4 |    	16 |               	30.00 |
+|      	14 |     	1 |               	56.00 |
+|       	2 |    	10 |              	127.89 |
+|       	2 |    	10 |              	127.89 |
+|       	3 |     	9 |              	110.00 |
+|      	13 |    	12 |              	735.00 |
+|       	6 |     	4 |               	80.00 |
+|      	12 |    	11 |             	2094.75 |
+|       	2 |    	12 |               	84.00 |
+|       	2 |    	15 |               	28.00 |
+|       	9 |     	2 |               	84.00 |
+|       	9 |     	2 |               	84.00 |
+|       	9 |     	2 |               	84.00 |
+|      	14 |    	10 |              	828.00 |
+|       	2 |    	16 |               	84.00 |
+|       	5 |     	6 |               	84.00 |
+|       	5 |     	6 |               	84.00 |
+|       	5 |     	6 |               	84.00 |
+|      	10 |    	12 |             	2704.80 |
+|      	12 |     	6 |              	158.40 |
+|       	2 |    	16 |              	112.00 |
+|      	13 |    	16 |              	112.00 |
+|       	1 |     	3 |               	60.00 |
+|       	2 |    	11 |               	56.00 |
+|       	1 |     	1 |              	178.78 |
+|       	2 |    	13 |               	84.00 |
+|      	10 |     	3 |               	84.00 |
++-------------+-----------+-------------------------+
+29 rows in set (0.00 sec)
+
+On store 
+mysql> SELECT time_key, product_key,sales_amount_MRP_rupees FROM salesfact WHERE product_key in(select store_key from sdt where state="karnataka");
++----------+-------------+-------------------------+
+| time_key | product_key | sales_amount_MRP_rupees |
++----------+-------------+-------------------------+
+|   	15 |       	1 |              	178.78 |
+|    	1 |       	2 |              	123.20 |
+|    	2 |       	4 |               	22.00 |
+|    	8 |       	9 |               	48.00 |
+|   	10 |      	10 |              	127.89 |
+|   	10 |      	10 |              	562.10 |
++----------+-------------+-------------------------+
+6 rows in set (0.00 sec)
+
+On product
+ select time_key,store_key,units_sold from salesfact where product_key in(select p_key from pdt where category="namkeen");
++----------+-----------+------------+
+| time_key | store_key | units_sold |
++----------+-----------+------------+
+|        3 |         8 |          9 |
+|       12 |         6 |          3 |
+|       12 |         6 |          3 |
+|       12 |         6 |          3 |
+|        1 |         7 |          1 |
+|        7 |         4 |          2 |
+|        2 |         1 |          7 |
+|        1 |         5 |          1 |
+|        1 |         5 |          1 |
+|        9 |         8 |         40 |
+|        1 |         5 |          1 |
+|        9 |         8 |         40 |
++----------+-----------+------------+
+12 rows in set (0.00 sec)
+
+
+DICE:
+
+select * from salesfact where product_key in(select p_key from pdt where name="pepsodent" or name="parle g") and time_key in(select t_key from tdt where quarter="q1" or quarter="q2") and store_key in (select s_key from sdt where city="mumbai" or city="kolkata");
++-------------+----------+-----------+---------------+------------+-------------------------+-------------------+
+| product_key | time_key | store_key | promotion_key | units_sold | sales_amount_MRP_rupees | profit_percentage |
++-------------+----------+-----------+---------------+------------+-------------------------+-------------------+
+|       	3 |    	3 |    	13 |      	NULL |      	4 |               	20.00 |          	NULL |
+|      	10 |    	9 |    	14 |         	8 |      	2 |              	127.89 |             	5 |
++-------------+----------+-----------+---------------+------------+-------------------------+-------------------+
+2 rows in set (0.01 sec)
